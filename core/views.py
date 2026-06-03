@@ -8,7 +8,7 @@ from projects.models import Project
 
 @login_required
 def home(request):
-    user: User = request.user  # type: ignore[assignment]
+    user = request.user
 
     if user.is_admin:
         ctx = {
@@ -18,11 +18,6 @@ def home(request):
         }
         return render(request, "dashboards/admin_dashboard.html", ctx)
 
-    if user.is_program_manager:
-        return redirect("manager_dashboard")
-
-    if user.is_finance_officer:
-        return redirect("finance_dashboard")
-
-    return redirect("field_dashboard")
+    # TEMP SAFE FALLBACK
+    return render(request, "dashboards/admin_dashboard.html", {})
 
