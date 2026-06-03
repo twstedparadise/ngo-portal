@@ -12,7 +12,9 @@ load_dotenv(BASE_DIR / ".env")
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-insecure-change-me")
 DEBUG = os.getenv("DJANGO_DEBUG", "0") == "1"
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = [ "localhost",
+    "127.0.0.1","https://ngo-portal-production-89af.up.railway.app/"
+    ]
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -109,3 +111,6 @@ LOGIN_URL = "login"
 LOGIN_REDIRECT_URL = "home"
 LOGOUT_REDIRECT_URL = "login"
 
+CSRF_TRUSTED_ORIGINS = [
+    "https://ngo-portal-production-89af.up.railway.app/",
+]
