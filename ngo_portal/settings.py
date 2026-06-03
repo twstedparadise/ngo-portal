@@ -13,7 +13,8 @@ SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-insecure-change-me")
 DEBUG = os.getenv("DJANGO_DEBUG", "0") == "1"
 
 ALLOWED_HOSTS = [ "localhost",
-    "127.0.0.1","https://ngo-portal-production-89af.up.railway.app/"
+    "127.0.0.1",
+    "ngo-portal-production-87e8.up.railway.app"
     ]
 
 INSTALLED_APPS = [
@@ -112,5 +113,5 @@ LOGIN_REDIRECT_URL = "home"
 LOGOUT_REDIRECT_URL = "login"
 
 CSRF_TRUSTED_ORIGINS = [
-    "https://ngo-portal-production-89af.up.railway.app/",
+    "https://ngo-portal-production-87e8.up.railway.app",
 ]
