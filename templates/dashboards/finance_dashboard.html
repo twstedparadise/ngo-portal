@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Finance Dashboard · NGO Portal{% endblock %}
+
+{% block content %}
+  <h1 class="h4 mb-3">Finance</h1>
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <div class="text-muted">Today's attendance count</div>
+      <div class="fs-3">{{ total_today }}</div>
+      <div class="text-muted small mt-2">MVP: finance reports can be added later.</div>
+    </div>
+  </div>
+{% endblock %}
+

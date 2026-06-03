@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+{% block title %}Field Dashboard · NGO Portal{% endblock %}
+
+{% block content %}
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h4 mb-0">Field Officer</h1>
+    {% if open_attendance %}
+      <span class="badge text-bg-warning">Checked in to {{ open_attendance.project.name }}</span>
+    {% else %}
+      <span class="badge text-bg-secondary">Not checked in</span>
+    {% endif %}
+  </div>
+
+  <div class="card shadow-sm mb-3">
+    <div class="card-body">
+      <h2 class="h6">GPS status</h2>
+      <div id="gpsStatus" class="text-muted">Waiting for location…</div>
+      <div class="small text-muted mt-1">Tip: location works best on HTTPS, but localhost is usually allowed in dev.</div>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-md-7">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h2 class="h6">Assigned projects</h2>
+
+          {% if projects %}
+            <div class="list-group">
+              {% for project in projects %}
+                <div class="list-group-item">
+                  <div class="d-flex justify-content-between">
+                    <div>
+                      <div class="fw-semibold">{{ project.name }}</div>
+                      <div class="text-muted small">{{ project.radius_m }}m radius</div>
+                    </div>
+                    <div class="text-end">
+                      {% if not open_attendance %}
+                        <form method="post" action="{% url 'check_in' %}" class="d-inline checkinForm">
+                          {% csrf_token %}
+                          <input type="hidden" name="project_id" value="{{ project.id }}" />
+                          <input type="hidden" name="lat" class="latField" />
+                          <input type="hidden" name="lng" class="lngField" />
+                          <button type="submit" class="btn btn-sm btn-primary">Check In</button>
+                        </form>
+                      {% else %}
+                        <button class="btn btn-sm btn-outline-secondary" disabled>Check In</button>
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="text-muted">No assigned projects yet. Ask an admin to assign you to a project.</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-5">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h2 class="h6">Check out</h2>
+          {% if open_attendance %}
+            <div class="mb-2">Project: <strong>{{ open_attendance.project.name }}</strong></div>
+            <form method="post" action="{% url 'check_out' %}" id="checkoutForm">
+              {% csrf_token %}
+              <input type="hidden" name="lat" id="outLat" />
+              <input type="hidden" name="lng" id="outLng" />
+              <button class="btn btn-danger w-100" type="submit">Check Out</button>
+            </form>
+          {% else %}
+            <div class="text-muted">You have no open check-in.</div>
+            <button class="btn btn-outline-danger w-100" disabled>Check Out</button>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="card shadow-sm mt-3">
+        <div class="card-body">
+          <h2 class="h6">Today's recent records</h2>
+          {% if todays_records %}
+            <ul class="mb-0">
+              {% for a in todays_records %}
+                <li class="small">
+                  {{ a.project.name }} — {{ a.check_in_time|date:"H:i" }}
+                  {% if a.check_out_time %}→ {{ a.check_out_time|date:"H:i" }}{% else %}(open){% endif %}
+                </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <div class="text-muted">No records today yet.</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block scripts %}
+  <script>
+    (function () {
+      const statusEl = document.getElementById("gpsStatus");
+      const forms = Array.from(document.querySelectorAll(".checkinForm"));
+      const outLat = document.getElementById("outLat");
+      const outLng = document.getElementById("outLng");
+
+      function setCoords(lat, lng) {
+        forms.forEach((f) => {
+          const latField = f.querySelector(".latField");
+          const lngField = f.querySelector(".lngField");
+          if (latField) latField.value = lat;
+          if (lngField) lngField.value = lng;
+        });
+        if (outLat) outLat.value = lat;
+        if (outLng) outLng.value = lng;
+      }
+
+      function ok(msg) {
+        statusEl.textContent = msg;
+        statusEl.className = "text-success";
+      }
+
+      function bad(msg) {
+        statusEl.textContent = msg;
+        statusEl.className = "text-danger";
+      }
+
+      if (!navigator.geolocation) {
+        bad("Geolocation API not supported by this browser.");
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const lat = pos.coords.latitude;
+          const lng = pos.coords.longitude;
+          setCoords(lat, lng);
+          ok(`Location captured: ${lat.toFixed(6)}, ${lng.toFixed(6)}`);
+        },
+        (err) => {
+          bad(`Location error: ${err.message}`);
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+      );
+    })();
+  </script>
+{% endblock %}
+

@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Program Manager Dashboard · NGO Portal{% endblock %}
+
+{% block content %}
+  <h1 class="h4 mb-3">Program Manager</h1>
+
+  <div class="card shadow-sm mb-3">
+    <div class="card-body">
+      <div class="text-muted">Today's attendance</div>
+      <div class="fs-3">{{ total_today }}</div>
+    </div>
+  </div>
+
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <h2 class="h6">Today's participation by project</h2>
+      {% if by_project %}
+        <ul class="mb-0">
+          {% for row in by_project %}
+            <li>{{ row.project__name }} — <strong>{{ row.count }}</strong></li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <div class="text-muted">No attendance yet today.</div>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}
+
