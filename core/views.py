@@ -5,7 +5,6 @@ from accounts.models import User
 from attendance.models import Attendance
 from projects.models import Project
 
-
 @login_required
 def home(request):
     user = request.user
@@ -18,12 +17,10 @@ def home(request):
         }
         return render(request, "dashboards/admin_dashboard.html", ctx)
 
-    # TEMP SAFE FALLBACK
-    if user.is_program_manager: 
+    if user.is_program_manager:
         return redirect("manager_dashboard")
 
     if user.is_finance_officer:
-         return redirect("finance_dashboard") 
+        return redirect("finance_dashboard")
 
-return redirect("field_dashboard")
-
+    return redirect("field_dashboard")
