@@ -19,5 +19,11 @@ def home(request):
         return render(request, "dashboards/admin_dashboard.html", ctx)
 
     # TEMP SAFE FALLBACK
-    return render(request, "dashboards/admin_dashboard.html", {})
+    if user.is_program_manager: 
+        return redirect("manager_dashboard")
+
+    if user.is_finance_officer:
+         return redirect("finance_dashboard") 
+
+return redirect("field_dashboard")
 
