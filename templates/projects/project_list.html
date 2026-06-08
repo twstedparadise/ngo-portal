@@ -1,43 +1,80 @@
 {% extends "base.html" %}
-{% block title %}Projects · NGO Portal{% endblock %}
+
+{% block title %}Projects | Swahilipot Portal{% endblock %}
 
 {% block content %}
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h1 class="h4 mb-0">Projects</h1>
-    {% if user.is_superuser %}
-      <a class="btn btn-sm btn-outline-secondary" href="/admin/projects/project/">Manage</a>
-    {% endif %}
+<div class="sp-fade-in">
+  <!-- Page Header -->
+  <div class="sp-page-header">
+    <div>
+      <h1 class="sp-page-title">Projects</h1>
+      <p style="color: var(--text-muted); font-size: 14px; margin-top: 4px;">
+        Manage and monitor all field projects
+      </p>
+    </div>
+    <!-- Create button removed until URL is added -->
   </div>
 
-  <div class="card shadow-sm">
-    <div class="card-body">
-      {% if projects %}
-        <div class="table-responsive">
-          <table class="table table-sm align-middle">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Radius</th>
-                <th>Latitude</th>
-                <th>Longitude</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for p in projects %}
-                <tr>
-                  <td class="fw-semibold">{{ p.name }}</td>
-                  <td>{{ p.radius_m }}m</td>
-                  <td>{{ p.latitude }}</td>
-                  <td>{{ p.longitude }}</td>
-                </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
-      {% else %}
-        <div class="text-muted">No projects available.</div>
-      {% endif %}
+  <!-- Projects Card with Table -->
+  <div class="sp-card" style="overflow: hidden; padding: 0;">
+    <div style="overflow-x: auto;">
+      <table class="data-table" style="width: 100%;">
+        <thead>
+          <tr>
+            <th>Project Name</th>
+            <th>Location</th>
+            <th>Geofence Radius</th>
+            <th>Assigned Staff</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for project in projects %}
+          <tr>
+            <td style="font-weight: 500;">
+              {{ project.name }}
+            </td>
+            <td style="color: var(--text-secondary); font-size: 13px;">
+              {{ project.latitude|default:"—" }}, {{ project.longitude|default:"—" }}
+            </td>
+            <td>
+              {% if project.radius_m %}
+                <span style="font-family: monospace;">{{ project.radius_m }}m</span>
+              {% else %}
+                <span style="color: var(--text-muted);">—</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if project.assigned_staff.all %}
+                <div style="display: flex; flex-wrap: wrap; gap: 4px;">
+                  {% for staff in project.assigned_staff.all|slice:":2" %}
+                    <span class="sp-badge sp-badge-blue">{{ staff.get_full_name|default:staff.username }}</span>
+                  {% endfor %}
+                  {% if project.assigned_staff.all|length > 2 %}
+                    <span class="sp-badge sp-badge-muted">+{{ project.assigned_staff.all|length|add:"-2" }}</span>
+                  {% endif %}
+                </div>
+              {% else %}
+                <span class="sp-badge sp-badge-muted">Unassigned</span>
+              {% endif %}
+             </td>
+            <td>
+              <span class="sp-badge sp-badge-success">Active</span>
+             </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="5">
+              <div class="sp-empty">
+                <div style="font-size: 48px; margin-bottom: 12px;">📁</div>
+                <p>No projects created yet</p>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
   </div>
+</div>
 {% endblock %}
-
