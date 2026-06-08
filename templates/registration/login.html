@@ -1,20 +1,96 @@
+<!-- templates/registration/login.html -->
 {% extends "base.html" %}
-{% block title %}Login · NGO Portal{% endblock %}
+{% load static %}
+
+{% block title %}Login | Swahilipot Portal{% endblock %}
 
 {% block content %}
-  <div class="row justify-content-center">
-    <div class="col-md-5">
-      <div class="card shadow-sm">
-        <div class="card-body">
-          <h1 class="h4 mb-3">Sign in</h1>
-          <form method="post">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <button class="btn btn-primary w-100" type="submit">Login</button>
-          </form>
-        </div>
+<div class="sp-fade-in" style="max-width: 480px; margin: 40px auto;">
+  <!-- Card Container -->
+  <div class="sp-card" style="padding: 32px;">
+    <!-- Header -->
+    <div style="text-align: center; margin-bottom: 32px;">
+      <div style="width: 56px; height: 56px; background: linear-gradient(135deg, var(--sp-blue), var(--sp-teal)); border-radius: 16px; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; font-family: 'Syne', sans-serif; font-weight: 800; font-size: 24px; color: var(--bg-base); box-shadow: var(--glow-blue);">
+        S
       </div>
+      <h1 class="sp-page-title" style="font-size: 28px; margin-bottom: 8px;">Welcome back</h1>
+      <p style="color: var(--text-muted); font-size: 14px;">Sign in to access your dashboard</p>
     </div>
+
+    <!-- Login Form -->
+    <form method="post" action="{% url 'login' %}">
+      {% csrf_token %}
+
+      <!-- Username Field -->
+      <div style="margin-bottom: 20px;">
+        <label for="id_username" style="display: block; margin-bottom: 8px; color: var(--text-secondary); font-weight: 500; font-size: 13px;">Username</label>
+        <input type="text" 
+               name="username" 
+               id="id_username" 
+               class="form-control" 
+               placeholder="Enter your username"
+               style="width: 100%; background: var(--bg-base); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 16px; color: var(--text-primary); transition: all 0.2s ease;"
+               autofocus
+               required>
+        {% if form.username.errors %}
+          <div style="color: var(--danger); font-size: 12px; margin-top: 6px;">{{ form.username.errors }}</div>
+        {% endif %}
+      </div>
+
+      <!-- Password Field -->
+      <div style="margin-bottom: 24px;">
+        <label for="id_password" style="display: block; margin-bottom: 8px; color: var(--text-secondary); font-weight: 500; font-size: 13px;">Password</label>
+        <input type="password" 
+               name="password" 
+               id="id_password" 
+               class="form-control"
+               placeholder="Enter your password"
+               style="width: 100%; background: var(--bg-base); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 16px; color: var(--text-primary); transition: all 0.2s ease;"
+               required>
+        {% if form.password.errors %}
+          <div style="color: var(--danger); font-size: 12px; margin-top: 6px;">{{ form.password.errors }}</div>
+        {% endif %}
+      </div>
+
+      <!-- Non-field errors -->
+      {% if form.non_field_errors %}
+        <div class="sp-alert sp-alert-danger" style="margin-bottom: 20px;">
+          {{ form.non_field_errors }}
+        </div>
+      {% endif %}
+
+      <!-- Hidden redirect next parameter -->
+      <input type="hidden" name="next" value="{{ next }}">
+
+      <!-- Submit Button -->
+      <button type="submit" class="btn-sp btn-sp-primary btn-w-full" style="padding: 12px; font-size: 14px; font-weight: 600; margin-bottom: 16px;">
+        Sign In
+      </button>
+
+      <!-- Help Text -->
+      <div style="text-align: center; padding-top: 16px; border-top: 1px solid var(--border);">
+        <p style="color: var(--text-muted); font-size: 12px;">
+          Demo credentials? Contact your administrator
+        </p>
+      </div>
+    </form>
   </div>
+</div>
 {% endblock %}
 
+{% block scripts %}
+<script>
+  // Add focus styling for inputs
+  const inputs = document.querySelectorAll('input.form-control');
+  inputs.forEach(input => {
+    input.addEventListener('focus', function() {
+      this.style.borderColor = 'var(--sp-blue)';
+      this.style.boxShadow = '0 0 0 3px rgba(56, 189, 248, 0.1)';
+    });
+    input.addEventListener('blur', function() {
+      this.style.borderColor = 'var(--border)';
+      this.style.boxShadow = 'none';
+    });
+  });
+</script>
+{% endblock %}
