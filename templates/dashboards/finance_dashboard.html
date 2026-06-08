@@ -19,28 +19,28 @@
     </div>
   </div>
 
-  <!-- Stats Grid -->
+  <!-- Financial Stats Grid -->
   <div class="sp-grid-3" style="margin-bottom: 24px;">
     <div class="sp-stat">
-      <div class="sp-stat-label">Total Attendance Hours</div>
-      <div class="sp-stat-value">{{ total_attendance_hours }}</div>
+      <div class="sp-stat-label">Total Budget</div>
+      <div class="sp-stat-value">KSH {{ total_budget }}</div>
+      <div class="sp-stat-icon">💰</div>
+    </div>
+    
+    <div class="sp-stat">
+      <div class="sp-stat-label">Total Hours Logged</div>
+      <div class="sp-stat-value">{{ total_hours }}</div>
       <div class="sp-stat-icon">⏱️</div>
     </div>
     
     <div class="sp-stat">
-      <div class="sp-stat-label">Active Projects</div>
-      <div class="sp-stat-value">{{ active_projects }}</div>
-      <div class="sp-stat-icon">📁</div>
-    </div>
-    
-    <div class="sp-stat">
-      <div class="sp-stat-label">Field Officers</div>
-      <div class="sp-stat-value">{{ unique_officers }}</div>
-      <div class="sp-stat-icon">👥</div>
+      <div class="sp-stat-label">Avg. Cost/Hour</div>
+      <div class="sp-stat-value">KSH {{ avg_cost_per_hour }}</div>
+      <div class="sp-stat-icon">📊</div>
     </div>
   </div>
 
-  <!-- Monthly Stats Card -->
+  <!-- Second Row of Stats -->
   <div class="sp-grid-2" style="margin-bottom: 24px;">
     <div class="sp-card">
       <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 20px;">
@@ -54,15 +54,15 @@
           {{ monthly_checkins }}
         </div>
         <div style="color: var(--text-muted); font-size: 12px;">
-          ⚡ Last 30 days
+          📍 Last 30 days
         </div>
       </div>
     </div>
 
     <div class="sp-card">
       <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 20px;">
-        <span style="font-size: 20px;">💰</span>
-        <h2 style="font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 600;">Resource Allocation</h2>
+        <span style="font-size: 20px;">👥</span>
+        <h2 style="font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 600;">Field Officers</h2>
       </div>
       
       <div>
@@ -71,13 +71,52 @@
           {{ unique_officers }}
         </div>
         <div style="color: var(--text-muted); font-size: 12px;">
-          👥 Currently deployed
+          ✅ Currently deployed
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Recent Activity Table -->
+  <!-- Cost Breakdown Card -->
+  <div class="sp-card" style="margin-bottom: 24px;">
+    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 20px;">
+      <span style="font-size: 20px;">📈</span>
+      <h2 style="font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 600;">Cost Breakdown</h2>
+    </div>
+    
+    <div class="sp-grid-2">
+      <div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+          <span style="color: var(--text-muted);">Personnel Costs</span>
+          <span style="font-weight: 600;">KSH {{ personnel_costs }}</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+          <span style="color: var(--text-muted);">Operational Costs</span>
+          <span style="font-weight: 600;">KSH {{ operational_costs }}</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+          <span style="color: var(--text-muted);">Equipment & Tools</span>
+          <span style="font-weight: 600;">KSH {{ equipment_costs }}</span>
+        </div>
+      </div>
+      <div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+          <span style="color: var(--text-muted);">Training Costs</span>
+          <span style="font-weight: 600;">KSH {{ training_costs }}</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+          <span style="color: var(--text-muted);">Travel & Transport</span>
+          <span style="font-weight: 600;">KSH {{ travel_costs }}</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; padding-top: 12px; border-top: 1px solid var(--border);">
+          <span style="font-weight: 600;">Total Spent</span>
+          <span style="font-weight: 800; color: var(--sp-blue);">KSH {{ total_spent }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Activity -->
   <div class="sp-card">
     <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 20px;">
       <span style="font-size: 20px;">📋</span>
@@ -90,39 +129,35 @@
           <tr>
             <th>Officer</th>
             <th>Project</th>
-            <th>Check-in Time</th>
-            <th>Duration</th>
-            <th>Status</th>
+            <th>Date</th>
+            <th>Duration (min)</th>
+            <th>Cost (KSH)</th>
           </tr>
         </thead>
         <tbody>
-          {% for activity in recent_activities %}
+          {% for record in recent_attendance %}
           <tr>
             <td style="font-weight: 500;">
-              {{ activity.user.get_full_name|default:activity.user.username }}
+              {{ record.user.get_full_name|default:record.user.username }}
             </td>
             <td style="color: var(--text-secondary);">
-              {{ activity.project.name|default:"—" }}
+              {{ record.project.name }}
             </td>
             <td style="color: var(--text-secondary); font-size: 13px;">
-              {{ activity.timestamp|date:"M d, H:i" }}
+              {{ record.check_in_time|date:"M d, Y" }}
             </td>
             <td>
-              {% if activity.details %}
-                <span style="font-size: 13px;">{{ activity.details|truncatewords:3 }}</span>
-              {% else %}
-                <span style="color: var(--text-muted);">—</span>
-              {% endif %}
+              {{ record.duration_minutes|default:"0" }}
             </td>
             <td>
-              <span class="sp-badge sp-badge-success">Completed</span>
+              KSH {{ record.duration_minutes|default:"0"|floatformat:0 }}
             </td>
           </tr>
           {% empty %}
           <tr>
             <td colspan="5">
               <div class="sp-empty">
-                No recent activity
+                No attendance records yet
               </div>
             </td>
           </tr>
@@ -132,9 +167,9 @@
     </div>
   </div>
 
-  <!-- Placeholder Note for MVP -->
+  <!-- Placeholder Note -->
   <div class="sp-alert sp-alert-info" style="margin-top: 24px; text-align: center;">
-    💡 This dashboard shows placeholder metrics for the MVP. Full financial reporting coming soon!
+    💡 This dashboard shows placeholder financial data for the MVP. Actual integration coming soon!
   </div>
 </div>
 {% endblock %}
