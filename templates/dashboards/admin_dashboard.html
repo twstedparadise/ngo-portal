@@ -1,30 +1,167 @@
 {% extends "base.html" %}
-{% block title %}Admin Dashboard · Swahilipot Portal{% endblock %}
+
+{% block title %}Admin Dashboard | Swahilipot Portal{% endblock %}
 
 {% block content %}
-<div class="sp-page-header sp-fade-in">
-  <div>
-    <div class="sp-page-title">Admin Dashboard</div>
-    <div style="font-size:13px; color:var(--text-muted); margin-top:2px;">Swahilipot Hub Foundation</div>
+<div class="sp-fade-in">
+  <!-- Page Header -->
+  <div class="sp-page-header">
+    <div>
+      <h1 class="sp-page-title">Admin Dashboard</h1>
+      <p style="color: var(--text-muted); font-size: 14px; margin-top: 4px;">
+        System overview and key metrics
+      </p>
+    </div>
+    <div>
+      <span class="sp-badge sp-badge-success" style="padding: 8px 16px;">
+        {{ today|date:"l, F j, Y" }}
+      </span>
+    </div>
   </div>
-  <a class="btn-sp btn-sp-primary" href="/admin/">Django Admin ↗</a>
-</div>
 
-<div class="sp-grid-3 sp-mb sp-fade-in">
-  <div class="sp-stat">
-    <div class="sp-stat-label">Total Users</div>
-    <div class="sp-stat-value">{{ total_users }}</div>
-    <div class="sp-stat-icon">👥</div>
+  <!-- Stats Grid - 3 columns -->
+  <div class="sp-grid-3" style="margin-bottom: 24px;">
+    <!-- Total Users Card -->
+    <div class="sp-stat">
+      <div class="sp-stat-label">Total Users</div>
+      <div class="sp-stat-value">{{ total_users }}</div>
+      <div class="sp-stat-icon">👥</div>
+    </div>
+
+    <!-- Total Projects Card -->
+    <div class="sp-stat">
+      <div class="sp-stat-label">Active Projects</div>
+      <div class="sp-stat-value">{{ total_projects }}</div>
+      <div class="sp-stat-icon">📁</div>
+    </div>
+
+    <!-- Today's Attendance Card -->
+    <div class="sp-stat">
+      <div class="sp-stat-label">Today's Check-ins</div>
+      <div class="sp-stat-value">{{ today_attendance }}</div>
+      <div class="sp-stat-icon">✅</div>
+    </div>
   </div>
-  <div class="sp-stat">
-    <div class="sp-stat-label">Active Projects</div>
-    <div class="sp-stat-value">{{ active_projects }}</div>
-    <div class="sp-stat-icon">📌</div>
+
+  <!-- Two Column Layout for Charts and Lists -->
+  <div class="sp-grid-7-5">
+    <!-- Left Column: Recent Activity -->
+    <div class="sp-card">
+      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 20px;">
+        <span style="font-size: 20px;">🕒</span>
+        <h2 style="font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 600;">Recent Activity</h2>
+      </div>
+      
+      <div style="max-height: 400px; overflow-y: auto;">
+        {% if recent_activities %}
+          {% for activity in recent_activities %}
+            <div class="sp-record">
+              <div class="sp-record-dot" style="background: var(--sp-blue);"></div>
+              <div class="sp-record-name">
+                {{ activity.user.get_full_name|default:activity.user.username }}
+                <span style="color: var(--text-muted); font-size: 12px;">
+                  {% if activity.action == 'check_in' %}checked in at{% else %}checked out from{% endif %}
+                </span>
+                {{ activity.project.name|default:"project" }}
+              </div>
+              <div class="sp-record-time">
+                {{ activity.timestamp|date:"H:i" }}
+              </div>
+            </div>
+          {% endfor %}
+        {% else %}
+          <div class="sp-empty">
+            <div style="font-size: 32px; margin-bottom: 12px;">📭</div>
+            <p>No recent activity</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Right Column: Quick Actions & Alerts -->
+    <div>
+      <!-- Quick Actions Card -->
+      <div class="sp-card" style="margin-bottom: 20px;">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 20px;">
+          <span style="font-size: 20px;">⚡</span>
+          <h2 style="font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 600;">Quick Actions</h2>
+        </div>
+        
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+          <a href="{% url 'project_create' %}" class="btn-sp btn-sp-primary" style="justify-content: center;">
+            + Create New Project
+          </a>
+          <a href="{% url 'admin:accounts_user_changelist' %}" class="btn-sp btn-sp-outline" style="justify-content: center;">
+            👥 Manage Users
+          </a>
+          <a href="{% url 'admin:index' %}" class="btn-sp btn-sp-ghost" style="justify-content: center;">
+            ⚙️ Django Admin
+          </a>
+        </div>
+      </div>
+
+      <!-- System Status Card -->
+      <div class="sp-card">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 20px;">
+          <span style="font-size: 20px;">🖥️</span>
+          <h2 style="font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 600;">System Status</h2>
+        </div>
+        
+        <div style="margin-bottom: 12px;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+            <span style="color: var(--text-muted);">Database</span>
+            <span class="sp-badge sp-badge-success">Connected ✅</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+            <span style="color: var(--text-muted);">GPS Service</span>
+            <span class="sp-badge sp-badge-success">Active 📡</span>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span style="color: var(--text-muted);">Last Sync</span>
+            <span style="color: var(--text-primary); font-size: 13px;">{{ now|date:"H:i:s" }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
-  <div class="sp-stat">
-    <div class="sp-stat-label">Today's Attendance</div>
-    <div class="sp-stat-value">{{ todays_attendance }}</div>
-    <div class="sp-stat-icon">✅</div>
+
+  <!-- Projects Overview Table -->
+  <div class="sp-card" style="margin-top: 24px;">
+    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 20px;">
+      <span style="font-size: 20px;">📊</span>
+      <h2 style="font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 600;">Projects Overview</h2>
+    </div>
+    
+    <div style="overflow-x: auto;">
+      <table class="data-table" style="width: 100%;">
+        <thead>
+          <tr>
+            <th>Project Name</th>
+            <th>Assigned Staff</th>
+            <th>Total Check-ins</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for project in projects %}
+          <tr>
+            <td style="font-weight: 500;">{{ project.name }}</td>
+            <td>{{ project.assigned_staff.count }}</td>
+            <td>{{ project.attendance_set.count }}</td>
+            <td><span class="sp-badge sp-badge-success">Active</span></td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="4">
+              <div class="sp-empty">
+                No projects created yet
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
 {% endblock %}
