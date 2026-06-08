@@ -1,38 +1,107 @@
 {% extends "base.html" %}
-{% block title %}Program Manager · Swahilipot Portal{% endblock %}
+
+{% block title %}Manager Dashboard | Swahilipot Portal{% endblock %}
 
 {% block content %}
-<div class="sp-page-header sp-fade-in">
-  <div>
-    <div class="sp-page-title">Program Manager</div>
-    <div style="font-size:13px; color:var(--text-muted); margin-top:2px;">Attendance overview</div>
+<div class="sp-fade-in">
+  <!-- Page Header -->
+  <div class="sp-page-header">
+    <div>
+      <h1 class="sp-page-title">Manager Dashboard</h1>
+      <p style="color: var(--text-muted); font-size: 14px; margin-top: 4px;">
+        Participation statistics and project oversight
+      </p>
+    </div>
+    <div>
+      <span class="sp-badge sp-badge-success" style="padding: 8px 16px;">
+        {{ today|date:"l, F j, Y" }}
+      </span>
+    </div>
   </div>
-</div>
 
-<div class="sp-grid-2 sp-fade-in">
-  <div class="sp-stat">
-    <div class="sp-stat-label">Today's Attendance</div>
-    <div class="sp-stat-value">{{ total_today }}</div>
-    <div class="sp-stat-icon">📋</div>
+  <!-- Stats Grid -->
+  <div class="sp-grid-3" style="margin-bottom: 24px;">
+    <div class="sp-stat">
+      <div class="sp-stat-label">Total Projects</div>
+      <div class="sp-stat-value">{{ total_projects }}</div>
+      <div class="sp-stat-icon">📁</div>
+    </div>
+    
+    <div class="sp-stat">
+      <div class="sp-stat-label">Total Check-ins</div>
+      <div class="sp-stat-value">{{ total_checkins }}</div>
+      <div class="sp-stat-icon">✅</div>
+    </div>
+    
+    <div class="sp-stat">
+      <div class="sp-stat-label">Active Officers (7d)</div>
+      <div class="sp-stat-value">{{ active_officers }}</div>
+      <div class="sp-stat-icon">👥</div>
+    </div>
   </div>
-  <div class="sp-stat">
-    <div class="sp-stat-label">Active Projects</div>
-    <div class="sp-stat-value">{{ by_project|length }}</div>
-    <div class="sp-stat-icon">📌</div>
-  </div>
-</div>
 
-<div class="sp-card sp-mt sp-fade-in">
-  <div class="sp-card-title">Today's Participation by Project</div>
-  {% if by_project %}
-    {% for row in by_project %}
-      <div class="sp-list-item">
-        <div class="sp-list-name">{{ row.project__name }}</div>
-        <span class="sp-badge sp-badge-blue">{{ row.count }} check-in{{ row.count|pluralize }}</span>
+  <!-- Weekly Stats Card -->
+  <div class="sp-card" style="margin-bottom: 24px;">
+    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 20px;">
+      <span style="font-size: 20px;">📊</span>
+      <h2 style="font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 600;">Weekly Overview</h2>
+    </div>
+    
+    <div class="sp-grid-2">
+      <div>
+        <div style="color: var(--text-muted); font-size: 12px; margin-bottom: 4px;">This Week's Check-ins</div>
+        <div style="font-size: 32px; font-weight: 700; color: var(--sp-blue);">{{ weekly_checkins }}</div>
       </div>
-    {% endfor %}
-  {% else %}
-    <div class="sp-empty">No attendance recorded today yet.</div>
-  {% endif %}
+      <div>
+        <div style="color: var(--text-muted); font-size: 12px; margin-bottom: 4px;">Active Participation</div>
+        <div style="font-size: 32px; font-weight: 700; color: var(--sp-teal);">
+          {% if total_projects > 0 %}
+            {{ weekly_checkins|floatformat:0 }}
+          {% else %}
+            0
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Projects Table -->
+  <div class="sp-card">
+    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 20px;">
+      <span style="font-size: 20px;">📋</span>
+      <h2 style="font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 600;">Project Participation</h2>
+    </div>
+    
+    <div style="overflow-x: auto;">
+      <table class="data-table" style="width: 100%;">
+        <thead>
+          <tr>
+            <th>Project Name</th>
+            <th>Total Check-ins</th>
+            <th>Unique Officers</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for project in projects %}
+          <tr>
+            <td style="font-weight: 500;">{{ project.name }}</td>
+            <td>{{ project.total_checkins }}</td>
+            <td>{{ project.unique_officers }}</td>
+            <td><span class="sp-badge sp-badge-success">Active</span></td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="4">
+              <div class="sp-empty">
+                No projects available
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
 </div>
 {% endblock %}

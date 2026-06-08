@@ -1,125 +1,249 @@
 {% extends "base.html" %}
-{% block title %}Field Dashboard · Swahilipot Portal{% endblock %}
+
+{% block title %}Field Dashboard | Swahilipot Portal{% endblock %}
 
 {% block content %}
-<div class="sp-page-header sp-fade-in">
-  <div>
-    <div class="sp-page-title">Field Officer</div>
-    <div style="font-size:13px; color:var(--text-muted); margin-top:2px;">{{ user.get_full_name|default:user.username }}</div>
+<div class="sp-fade-in">
+  <!-- Page Header -->
+  <div class="sp-page-header">
+    <div>
+      <h1 class="sp-page-title">Field Dashboard</h1>
+      <p style="color: var(--text-muted); font-size: 14px; margin-top: 4px;">
+        GPS Check-in/out and project monitoring
+      </p>
+    </div>
+    <div>
+      <span class="sp-badge sp-badge-success" style="padding: 8px 16px;">
+        {{ today|date:"l, F j, Y" }}
+      </span>
+    </div>
   </div>
-  {% if open_attendance %}
-    <span class="sp-badge sp-badge-success">Checked in · {{ open_attendance.project.name }}</span>
-  {% else %}
-    <span class="sp-badge sp-badge-muted">Not checked in</span>
+
+  <!-- GPS Status Card -->
+  <div class="sp-gps-box" id="gpsStatus">
+    <div class="sp-gps-dot" id="gpsDot"></div>
+    <div class="sp-gps-text" id="gpsText">Checking GPS availability...</div>
+  </div>
+
+  <!-- Active Session Alert -->
+  {% if active_attendance %}
+  <div class="sp-alert sp-alert-success" id="activeSessionAlert">
+    ✅ You are currently checked in to <strong>{{ active_attendance.project.name }}</strong> since {{ active_attendance.check_in_time|time:"H:i" }}
+  </div>
+  {% endif %}
+
+  <!-- Projects Grid -->
+  <div class="sp-grid-2">
+    {% for project in projects %}
+    <div class="sp-card" data-project-id="{{ project.id }}" data-project-lat="{{ project.latitude }}" data-project-lng="{{ project.longitude }}" data-project-radius="{{ project.radius_m }}">
+      <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 16px;">
+        <h3 style="font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 600;">{{ project.name }}</h3>
+        <span class="sp-badge sp-badge-blue">{{ project.radius_m }}m radius</span>
+      </div>
+      
+      <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 12px;">
+        {{ project.description|truncatewords:20|default:"No description" }}
+      </p>
+      
+      <div style="margin-bottom: 16px;">
+        <div style="color: var(--text-muted); font-size: 11px; margin-bottom: 4px;">LOCATION</div>
+        <div style="font-size: 12px; font-family: monospace;">
+          {{ project.latitude }}, {{ project.longitude }}
+        </div>
+      </div>
+      
+      <div style="display: flex; gap: 12px;">
+        {% if not active_attendance %}
+        <button onclick="checkIn({{ project.id }})" class="btn-sp btn-sp-success" style="flex: 1;">
+          📍 Check In
+        </button>
+        {% endif %}
+        <a href="{% url 'project_detail' project.id %}" class="btn-sp btn-sp-ghost" style="flex: 1; text-align: center;">
+          View Details
+        </a>
+      </div>
+    </div>
+    {% empty %}
+    <div class="sp-card">
+      <div class="sp-empty">
+        <div style="font-size: 48px; margin-bottom: 12px;">📭</div>
+        <p>No projects assigned to you yet.</p>
+        <p style="font-size: 12px; margin-top: 8px;">Contact your administrator to get assigned.</p>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Check Out Button (if active session) -->
+  {% if active_attendance %}
+  <div style="position: fixed; bottom: 24px; right: 24px; z-index: 100;">
+    <button onclick="checkOut({{ active_attendance.id }})" class="btn-sp btn-sp-danger" style="padding: 14px 24px; font-size: 16px; box-shadow: var(--glow-strong);">
+      ⏹️ Check Out from {{ active_attendance.project.name }}
+    </button>
+  </div>
   {% endif %}
 </div>
 
-<div class="sp-gps-box sp-fade-in">
-  <div class="sp-gps-dot" id="gpsDot"></div>
-  <div class="sp-gps-text" id="gpsStatus">Acquiring location…</div>
-</div>
-
-<div class="sp-grid-7-5 sp-fade-in">
-  <div class="sp-card">
-    <div class="sp-card-title">Assigned Projects</div>
-    {% if projects %}
-      {% for project in projects %}
-        <div class="sp-list-item">
-          <div>
-            <div class="sp-list-name">{{ project.name }}</div>
-            <div class="sp-list-sub">📍 {{ project.radius_m }}m radius</div>
-          </div>
-          {% if not open_attendance %}
-            <form method="post" action="{% url 'check_in' %}" class="checkinForm" style="display:inline;">
-              {% csrf_token %}
-              <input type="hidden" name="project_id" value="{{ project.id }}" />
-              <input type="hidden" name="lat" class="latField" />
-              <input type="hidden" name="lng" class="lngField" />
-              <button type="submit" class="btn-sp btn-sp-success">Check In</button>
-            </form>
-          {% else %}
-            <button class="btn-sp btn-sp-ghost" disabled>Check In</button>
-          {% endif %}
-        </div>
-      {% endfor %}
-    {% else %}
-      <div class="sp-empty">No assigned projects yet.<br>Ask an admin to assign you.</div>
-    {% endif %}
-  </div>
-
-  <div style="display:flex; flex-direction:column; gap:16px;">
-    <div class="sp-card">
-      <div class="sp-card-title">Check Out</div>
-      {% if open_attendance %}
-        <div style="font-size:13px; color:var(--text-secondary); margin-bottom:14px;">
-          Currently at <strong style="color:var(--text-primary);">{{ open_attendance.project.name }}</strong>
-        </div>
-        <form method="post" action="{% url 'check_out' %}" id="checkoutForm">
-          {% csrf_token %}
-          <input type="hidden" name="lat" id="outLat" />
-          <input type="hidden" name="lng" id="outLng" />
-          <button class="btn-sp btn-sp-danger btn-w-full" type="submit">Check Out</button>
-        </form>
-      {% else %}
-        <div style="font-size:13px; color:var(--text-muted); margin-bottom:14px;">No open check-in.</div>
-        <button class="btn-sp btn-sp-danger btn-w-full" disabled>Check Out</button>
-      {% endif %}
-    </div>
-
-    <div class="sp-card">
-      <div class="sp-card-title">Today's Records</div>
-      {% if todays_records %}
-        {% for a in todays_records %}
-          <div class="sp-record">
-            <div class="sp-record-dot"></div>
-            <div class="sp-record-name">{{ a.project.name }}</div>
-            <div class="sp-record-time">
-              {{ a.check_in_time|date:"H:i" }}
-              {% if a.check_out_time %}→ {{ a.check_out_time|date:"H:i" }}{% else %}<span style="color:var(--sp-amber);">open</span>{% endif %}
-            </div>
-          </div>
-        {% endfor %}
-      {% else %}
-        <div class="sp-empty">No records today yet.</div>
-      {% endif %}
-    </div>
-  </div>
-</div>
-{% endblock %}
-
-{% block scripts %}
 <script>
-(function () {
-  const dot = document.getElementById("gpsDot");
-  const statusEl = document.getElementById("gpsStatus");
-  const forms = Array.from(document.querySelectorAll(".checkinForm"));
-  const outLat = document.getElementById("outLat");
-  const outLng = document.getElementById("outLng");
-
-  function setCoords(lat, lng) {
-    forms.forEach((f) => {
-      f.querySelector(".latField").value = lat;
-      f.querySelector(".lngField").value = lng;
-    });
-    if (outLat) outLat.value = lat;
-    if (outLng) outLng.value = lng;
+// Helper to get CSRF cookie
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
   }
+  return cookieValue;
+}
 
-  function ok(msg) { statusEl.textContent = msg; statusEl.className = "sp-gps-text ok"; dot.className = "sp-gps-dot active"; }
-  function bad(msg) { statusEl.textContent = msg; statusEl.className = "sp-gps-text err"; dot.className = "sp-gps-dot error"; }
+// GPS Status UI Update
+function updateGpsStatus(status, message) {
+  const dot = document.getElementById('gpsDot');
+  const text = document.getElementById('gpsText');
+  
+  dot.className = 'sp-gps-dot';
+  text.className = 'sp-gps-text';
+  
+  if (status === 'locating') {
+    dot.classList.add('active');
+    text.innerHTML = '📍 ' + message;
+  } else if (status === 'success') {
+    dot.classList.add('active');
+    text.innerHTML = '✅ ' + message;
+    text.classList.add('ok');
+  } else if (status === 'error') {
+    dot.classList.add('error');
+    text.innerHTML = '⚠️ ' + message;
+    text.classList.add('err');
+  }
+}
 
-  if (!navigator.geolocation) { bad("Geolocation not supported by this browser."); return; }
+// Calculate distance using Haversine formula
+function calculateDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371000; // meters
+  const phi1 = lat1 * Math.PI / 180;
+  const phi2 = lat2 * Math.PI / 180;
+  const deltaPhi = (lat2 - lat1) * Math.PI / 180;
+  const deltaLambda = (lon2 - lon1) * Math.PI / 180;
+  
+  const a = Math.sin(deltaPhi/2) * Math.sin(deltaPhi/2) +
+            Math.cos(phi1) * Math.cos(phi2) *
+            Math.sin(deltaLambda/2) * Math.sin(deltaLambda/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  
+  return R * c;
+}
 
+// Check In Function
+function checkIn(projectId) {
+  if (!navigator.geolocation) {
+    alert('GPS not supported by your browser');
+    return;
+  }
+  
+  const projectCard = document.querySelector(`.sp-card[data-project-id="${projectId}"]`);
+  const projectLat = parseFloat(projectCard.dataset.projectLat);
+  const projectLng = parseFloat(projectCard.dataset.projectLng);
+  const projectRadius = parseFloat(projectCard.dataset.projectRadius);
+  
+  updateGpsStatus('locating', 'Getting your location...');
+  
   navigator.geolocation.getCurrentPosition(
-    (pos) => {
-      const lat = pos.coords.latitude;
-      const lng = pos.coords.longitude;
-      setCoords(lat, lng);
-      ok(`Location captured · ${lat.toFixed(6)}, ${lng.toFixed(6)}`);
+    function(position) {
+      const userLat = position.coords.latitude;
+      const userLng = position.coords.longitude;
+      
+      // Calculate distance
+      const distance = calculateDistance(userLat, userLng, projectLat, projectLng);
+      
+      if (distance <= projectRadius) {
+        // Within geofence - send check-in to server
+        fetch(`/attendance/check-in/${projectId}/`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+          },
+          body: JSON.stringify({
+            latitude: userLat,
+            longitude: userLng
+          })
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            updateGpsStatus('success', data.message);
+            setTimeout(() => location.reload(), 1500);
+          } else {
+            updateGpsStatus('error', data.error);
+          }
+        })
+        .catch(error => {
+          updateGpsStatus('error', 'Server error. Please try again.');
+        });
+      } else {
+        updateGpsStatus('error', `You are ${Math.round(distance)}m away. Must be within ${projectRadius}m.`);
+      }
     },
-    (err) => { bad(`Location error: ${err.message}`); },
-    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    function(error) {
+      updateGpsStatus('error', 'GPS error: ' + error.message);
+    }
   );
-})();
+}
+
+// Check Out Function
+function checkOut(attendanceId) {
+  if (!navigator.geolocation) {
+    alert('GPS not supported');
+    return;
+  }
+  
+  updateGpsStatus('locating', 'Getting your location for check-out...');
+  
+  navigator.geolocation.getCurrentPosition(
+    function(position) {
+      fetch(`/attendance/check-out/${attendanceId}/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          updateGpsStatus('success', data.message);
+          setTimeout(() => location.reload(), 1500);
+        } else {
+          updateGpsStatus('error', data.error);
+        }
+      })
+      .catch(error => {
+        updateGpsStatus('error', 'Server error. Please try again.');
+      });
+    },
+    function(error) {
+      updateGpsStatus('error', 'GPS error: ' + error.message);
+    }
+  );
+}
+
+// Check GPS availability on page load
+window.addEventListener('load', function() {
+  if (navigator.geolocation) {
+    updateGpsStatus('locating', 'GPS ready. Select a project to check in.');
+  } else {
+    updateGpsStatus('error', 'GPS not supported by your browser');
+  }
+});
 </script>
 {% endblock %}

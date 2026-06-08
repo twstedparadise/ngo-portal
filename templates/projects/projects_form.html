@@ -51,10 +51,12 @@
       input.style.borderRadius = 'var(--radius-sm)';
       input.style.padding = '10px 14px';
       input.style.color = 'var(--text-primary)';
+      input.style.fontFamily = "'DM Sans', sans-serif";
       
       input.addEventListener('focus', function() {
         this.style.borderColor = 'var(--sp-blue)';
         this.style.boxShadow = '0 0 0 3px rgba(56, 189, 248, 0.1)';
+        this.style.outline = 'none';
       });
       input.addEventListener('blur', function() {
         this.style.borderColor = 'var(--border)';
