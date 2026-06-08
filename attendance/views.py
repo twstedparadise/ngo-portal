@@ -54,7 +54,7 @@ def admin_dashboard(request):
     }
     
     return render(request, 'dashboards/admin_dashboard.html', context)
-    
+
 @login_required
 def manager_dashboard(request):
     """Dashboard for program managers"""
@@ -91,7 +91,22 @@ def finance_dashboard(request):
         messages.error(request, 'Access denied.')
         return redirect('home')
     
-    return render(request, 'dashboards/finance_dashboard.html', {})
+    today = timezone.now().date()
+    month_ago = today - timezone.timedelta(days=30)
+    
+    # Get recent activities for the table
+    recent_activities = ActivityLog.objects.select_related('user', 'project').order_by('-timestamp')[:15]
+    
+    context = {
+        'total_attendance_hours': 1247,  # Placeholder - calculate from actual data later
+        'active_projects': Project.objects.count(),
+        'monthly_checkins': Attendance.objects.filter(check_in_time__date__gte=month_ago).count(),
+        'unique_officers': User.objects.filter(role='field_officer').count(),
+        'recent_activities': recent_activities,
+        'today': today,
+    }
+    
+    return render(request, 'dashboards/finance_dashboard.html', context)
 
 @login_required
 def attendance_logs(request):

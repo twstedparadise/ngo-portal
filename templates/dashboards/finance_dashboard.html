@@ -1,23 +1,140 @@
 {% extends "base.html" %}
-{% block title %}Finance · Swahilipot Portal{% endblock %}
+
+{% block title %}Finance Dashboard | Swahilipot Portal{% endblock %}
 
 {% block content %}
-<div class="sp-page-header sp-fade-in">
-  <div>
-    <div class="sp-page-title">Finance</div>
-    <div style="font-size:13px; color:var(--text-muted); margin-top:2px;">Reports &amp; attendance summary</div>
+<div class="sp-fade-in">
+  <!-- Page Header -->
+  <div class="sp-page-header">
+    <div>
+      <h1 class="sp-page-title">Finance Dashboard</h1>
+      <p style="color: var(--text-muted); font-size: 14px; margin-top: 4px;">
+        Financial overview and resource tracking
+      </p>
+    </div>
+    <div>
+      <span class="sp-badge sp-badge-success" style="padding: 8px 16px;">
+        {{ today|date:"l, F j, Y" }}
+      </span>
+    </div>
   </div>
-</div>
 
-<div class="sp-grid-2 sp-fade-in">
-  <div class="sp-stat">
-    <div class="sp-stat-label">Today's Attendance</div>
-    <div class="sp-stat-value">{{ total_today }}</div>
-    <div class="sp-stat-icon">📊</div>
+  <!-- Stats Grid -->
+  <div class="sp-grid-3" style="margin-bottom: 24px;">
+    <div class="sp-stat">
+      <div class="sp-stat-label">Total Attendance Hours</div>
+      <div class="sp-stat-value">{{ total_attendance_hours }}</div>
+      <div class="sp-stat-icon">⏱️</div>
+    </div>
+    
+    <div class="sp-stat">
+      <div class="sp-stat-label">Active Projects</div>
+      <div class="sp-stat-value">{{ active_projects }}</div>
+      <div class="sp-stat-icon">📁</div>
+    </div>
+    
+    <div class="sp-stat">
+      <div class="sp-stat-label">Field Officers</div>
+      <div class="sp-stat-value">{{ unique_officers }}</div>
+      <div class="sp-stat-icon">👥</div>
+    </div>
   </div>
-  <div class="sp-stat" style="display:flex; flex-direction:column; justify-content:center;">
-    <div class="sp-stat-label">Finance Reports</div>
-    <div style="font-size:13px; color:var(--text-muted); margin-top:6px;">Full reporting coming in the next phase.</div>
+
+  <!-- Monthly Stats Card -->
+  <div class="sp-grid-2" style="margin-bottom: 24px;">
+    <div class="sp-card">
+      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 20px;">
+        <span style="font-size: 20px;">📆</span>
+        <h2 style="font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 600;">Monthly Activity</h2>
+      </div>
+      
+      <div>
+        <div style="color: var(--text-muted); font-size: 12px; margin-bottom: 4px;">Check-ins This Month</div>
+        <div style="font-size: 42px; font-weight: 800; color: var(--sp-blue); margin-bottom: 8px;">
+          {{ monthly_checkins }}
+        </div>
+        <div style="color: var(--text-muted); font-size: 12px;">
+          ⚡ Last 30 days
+        </div>
+      </div>
+    </div>
+
+    <div class="sp-card">
+      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 20px;">
+        <span style="font-size: 20px;">💰</span>
+        <h2 style="font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 600;">Resource Allocation</h2>
+      </div>
+      
+      <div>
+        <div style="color: var(--text-muted); font-size: 12px; margin-bottom: 4px;">Active Officers</div>
+        <div style="font-size: 42px; font-weight: 800; color: var(--sp-teal); margin-bottom: 8px;">
+          {{ unique_officers }}
+        </div>
+        <div style="color: var(--text-muted); font-size: 12px;">
+          👥 Currently deployed
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Activity Table -->
+  <div class="sp-card">
+    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 20px;">
+      <span style="font-size: 20px;">📋</span>
+      <h2 style="font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 600;">Recent Field Activity</h2>
+    </div>
+    
+    <div style="overflow-x: auto;">
+      <table class="data-table" style="width: 100%;">
+        <thead>
+          <tr>
+            <th>Officer</th>
+            <th>Project</th>
+            <th>Check-in Time</th>
+            <th>Duration</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for activity in recent_activities %}
+          <tr>
+            <td style="font-weight: 500;">
+              {{ activity.user.get_full_name|default:activity.user.username }}
+            </td>
+            <td style="color: var(--text-secondary);">
+              {{ activity.project.name|default:"—" }}
+            </td>
+            <td style="color: var(--text-secondary); font-size: 13px;">
+              {{ activity.timestamp|date:"M d, H:i" }}
+            </td>
+            <td>
+              {% if activity.details %}
+                <span style="font-size: 13px;">{{ activity.details|truncatewords:3 }}</span>
+              {% else %}
+                <span style="color: var(--text-muted);">—</span>
+              {% endif %}
+            </td>
+            <td>
+              <span class="sp-badge sp-badge-success">Completed</span>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="5">
+              <div class="sp-empty">
+                No recent activity
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Placeholder Note for MVP -->
+  <div class="sp-alert sp-alert-info" style="margin-top: 24px; text-align: center;">
+    💡 This dashboard shows placeholder metrics for the MVP. Full financial reporting coming soon!
   </div>
 </div>
 {% endblock %}
