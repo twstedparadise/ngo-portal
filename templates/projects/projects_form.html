@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} | Swahilipot Portal{% endblock %}
+
+{% block content %}
+<div class="sp-fade-in" style="max-width: 800px; margin: 0 auto;">
+  <div class="sp-page-header">
+    <h1 class="sp-page-title">{{ title }}</h1>
+  </div>
+
+  <div class="sp-card">
+    <form method="post">
+      {% csrf_token %}
+      
+      {% for field in form %}
+      <div style="margin-bottom: 20px;">
+        <label for="{{ field.id_for_label }}" style="display: block; margin-bottom: 8px; color: var(--text-secondary); font-weight: 500;">
+          {{ field.label }}
+          {% if field.field.required %}<span style="color: var(--danger);">*</span>{% endif %}
+        </label>
+        {{ field }}
+        {% if field.help_text %}
+          <small style="color: var(--text-muted); font-size: 12px; margin-top: 4px; display: block;">{{ field.help_text }}</small>
+        {% endif %}
+        {% if field.errors %}
+          <div style="color: var(--danger); font-size: 12px; margin-top: 4px;">
+            {% for error in field.errors %}{{ error }}{% endfor %}
+          </div>
+        {% endif %}
+      </div>
+      {% endfor %}
+      
+      <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border);">
+        <a href="{% url 'project_list' %}" class="btn-sp btn-sp-ghost">Cancel</a>
+        <button type="submit" class="btn-sp btn-sp-primary">Save Project</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Add styling to form inputs
+  const inputs = document.querySelectorAll('input, select, textarea');
+  inputs.forEach(input => {
+    if (!input.classList.contains('form-control')) {
+      input.style.width = '100%';
+      input.style.background = 'var(--bg-base)';
+      input.style.border = '1px solid var(--border)';
+      input.style.borderRadius = 'var(--radius-sm)';
+      input.style.padding = '10px 14px';
+      input.style.color = 'var(--text-primary)';
+      
+      input.addEventListener('focus', function() {
+        this.style.borderColor = 'var(--sp-blue)';
+        this.style.boxShadow = '0 0 0 3px rgba(56, 189, 248, 0.1)';
+      });
+      input.addEventListener('blur', function() {
+        this.style.borderColor = 'var(--border)';
+        this.style.boxShadow = 'none';
+      });
+    }
+  });
+</script>
+{% endblock %}

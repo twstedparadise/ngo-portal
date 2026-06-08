@@ -4,7 +4,7 @@
 
 {% block content %}
 <div class="sp-fade-in">
-  <!-- Page Header -->
+  <!-- Page Header with Action Bar -->
   <div class="sp-page-header">
     <div>
       <h1 class="sp-page-title">Projects</h1>
@@ -12,7 +12,11 @@
         Manage and monitor all field projects
       </p>
     </div>
-    <!-- Create button removed until URL is added -->
+    <div>
+      <a href="{% url 'project_create' %}" class="btn-sp btn-sp-primary">
+        <span style="font-size: 18px;">+</span> New Project
+      </a>
+    </div>
   </div>
 
   <!-- Projects Card with Table -->
@@ -26,6 +30,7 @@
             <th>Geofence Radius</th>
             <th>Assigned Staff</th>
             <th>Status</th>
+            <th style="text-align: center;">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -57,17 +62,39 @@
               {% else %}
                 <span class="sp-badge sp-badge-muted">Unassigned</span>
               {% endif %}
-             </td>
+            </td>
             <td>
               <span class="sp-badge sp-badge-success">Active</span>
-             </td>
+            </td>
+            <td style="text-align: center;">
+              <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
+                <a href="{% url 'project_detail' project.pk %}" 
+                   class="btn-sp btn-sp-ghost" 
+                   style="padding: 4px 12px; font-size: 12px;">
+                  View
+                </a>
+                <a href="{% url 'project_update' project.pk %}" 
+                   class="btn-sp btn-sp-ghost" 
+                   style="padding: 4px 12px; font-size: 12px;">
+                  Edit
+                </a>
+                <a href="{% url 'project_delete' project.pk %}" 
+                   class="btn-sp btn-sp-danger" 
+                   style="padding: 4px 12px; font-size: 12px;">
+                  Delete
+                </a>
+              </div>
+            </td>
           </tr>
           {% empty %}
           <tr>
-            <td colspan="5">
+            <td colspan="6">
               <div class="sp-empty">
                 <div style="font-size: 48px; margin-bottom: 12px;">📁</div>
-                <p>No projects created yet</p>
+                <p style="margin-bottom: 16px;">No projects created yet</p>
+                <a href="{% url 'project_create' %}" class="btn-sp btn-sp-primary">
+                  Create your first project
+                </a>
               </div>
             </td>
           </tr>

@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}Delete Project | Swahilipot Portal{% endblock %}
+
+{% block content %}
+<div class="sp-fade-in" style="max-width: 600px; margin: 40px auto;">
+  <div class="sp-card">
+    <div class="sp-alert sp-alert-danger" style="margin-bottom: 24px;">
+      ⚠️ Warning: This action cannot be undone!
+    </div>
+    
+    <h2 style="font-family: 'Syne', sans-serif; font-size: 20px; margin-bottom: 16px;">
+      Delete "{{ project.name }}"?
+    </h2>
+    
+    <p style="color: var(--text-secondary); margin-bottom: 24px;">
+      This will permanently remove the project and all associated attendance records.
+    </p>
+    
+    <form method="post">
+      {% csrf_token %}
+      <div style="display: flex; gap: 12px; justify-content: flex-end;">
+        <a href="{% url 'project_list' %}" class="btn-sp btn-sp-ghost">Cancel</a>
+        <button type="submit" class="btn-sp btn-sp-danger">Yes, Delete Project</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
