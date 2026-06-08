@@ -1,37 +1,30 @@
 {% extends "base.html" %}
-{% block title %}Admin Dashboard · NGO Portal{% endblock %}
+{% block title %}Admin Dashboard · Swahilipot Portal{% endblock %}
 
 {% block content %}
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h1 class="h4 mb-0">Admin Dashboard</h1>
-    <a class="btn btn-sm btn-outline-secondary" href="/admin/">Admin</a>
+<div class="sp-page-header sp-fade-in">
+  <div>
+    <div class="sp-page-title">Admin Dashboard</div>
+    <div style="font-size:13px; color:var(--text-muted); margin-top:2px;">Swahilipot Hub Foundation</div>
   </div>
+  <a class="btn-sp btn-sp-primary" href="/admin/">Django Admin ↗</a>
+</div>
 
-  <div class="row g-3">
-    <div class="col-md-4">
-      <div class="card shadow-sm">
-        <div class="card-body">
-          <div class="text-muted">Total users</div>
-          <div class="fs-3">{{ total_users }}</div>
-        </div>
-      </div>
-    </div>
-    <div class="col-md-4">
-      <div class="card shadow-sm">
-        <div class="card-body">
-          <div class="text-muted">Active projects</div>
-          <div class="fs-3">{{ active_projects }}</div>
-        </div>
-      </div>
-    </div>
-    <div class="col-md-4">
-      <div class="card shadow-sm">
-        <div class="card-body">
-          <div class="text-muted">Today's attendance</div>
-          <div class="fs-3">{{ todays_attendance }}</div>
-        </div>
-      </div>
-    </div>
+<div class="sp-grid-3 sp-mb sp-fade-in">
+  <div class="sp-stat">
+    <div class="sp-stat-label">Total Users</div>
+    <div class="sp-stat-value">{{ total_users }}</div>
+    <div class="sp-stat-icon">👥</div>
   </div>
+  <div class="sp-stat">
+    <div class="sp-stat-label">Active Projects</div>
+    <div class="sp-stat-value">{{ active_projects }}</div>
+    <div class="sp-stat-icon">📌</div>
+  </div>
+  <div class="sp-stat">
+    <div class="sp-stat-label">Today's Attendance</div>
+    <div class="sp-stat-value">{{ todays_attendance }}</div>
+    <div class="sp-stat-icon">✅</div>
+  </div>
+</div>
 {% endblock %}
-

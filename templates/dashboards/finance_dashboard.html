@@ -1,14 +1,23 @@
 {% extends "base.html" %}
-{% block title %}Finance Dashboard · NGO Portal{% endblock %}
+{% block title %}Finance · Swahilipot Portal{% endblock %}
 
 {% block content %}
-  <h1 class="h4 mb-3">Finance</h1>
-  <div class="card shadow-sm">
-    <div class="card-body">
-      <div class="text-muted">Today's attendance count</div>
-      <div class="fs-3">{{ total_today }}</div>
-      <div class="text-muted small mt-2">MVP: finance reports can be added later.</div>
-    </div>
+<div class="sp-page-header sp-fade-in">
+  <div>
+    <div class="sp-page-title">Finance</div>
+    <div style="font-size:13px; color:var(--text-muted); margin-top:2px;">Reports &amp; attendance summary</div>
   </div>
-{% endblock %}
+</div>
 
+<div class="sp-grid-2 sp-fade-in">
+  <div class="sp-stat">
+    <div class="sp-stat-label">Today's Attendance</div>
+    <div class="sp-stat-value">{{ total_today }}</div>
+    <div class="sp-stat-icon">📊</div>
+  </div>
+  <div class="sp-stat" style="display:flex; flex-direction:column; justify-content:center;">
+    <div class="sp-stat-label">Finance Reports</div>
+    <div style="font-size:13px; color:var(--text-muted); margin-top:6px;">Full reporting coming in the next phase.</div>
+  </div>
+</div>
+{% endblock %}

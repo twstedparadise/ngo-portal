@@ -1,29 +1,38 @@
 {% extends "base.html" %}
-{% block title %}Program Manager Dashboard · NGO Portal{% endblock %}
+{% block title %}Program Manager · Swahilipot Portal{% endblock %}
 
 {% block content %}
-  <h1 class="h4 mb-3">Program Manager</h1>
-
-  <div class="card shadow-sm mb-3">
-    <div class="card-body">
-      <div class="text-muted">Today's attendance</div>
-      <div class="fs-3">{{ total_today }}</div>
-    </div>
+<div class="sp-page-header sp-fade-in">
+  <div>
+    <div class="sp-page-title">Program Manager</div>
+    <div style="font-size:13px; color:var(--text-muted); margin-top:2px;">Attendance overview</div>
   </div>
+</div>
 
-  <div class="card shadow-sm">
-    <div class="card-body">
-      <h2 class="h6">Today's participation by project</h2>
-      {% if by_project %}
-        <ul class="mb-0">
-          {% for row in by_project %}
-            <li>{{ row.project__name }} — <strong>{{ row.count }}</strong></li>
-          {% endfor %}
-        </ul>
-      {% else %}
-        <div class="text-muted">No attendance yet today.</div>
-      {% endif %}
-    </div>
+<div class="sp-grid-2 sp-fade-in">
+  <div class="sp-stat">
+    <div class="sp-stat-label">Today's Attendance</div>
+    <div class="sp-stat-value">{{ total_today }}</div>
+    <div class="sp-stat-icon">📋</div>
   </div>
+  <div class="sp-stat">
+    <div class="sp-stat-label">Active Projects</div>
+    <div class="sp-stat-value">{{ by_project|length }}</div>
+    <div class="sp-stat-icon">📌</div>
+  </div>
+</div>
+
+<div class="sp-card sp-mt sp-fade-in">
+  <div class="sp-card-title">Today's Participation by Project</div>
+  {% if by_project %}
+    {% for row in by_project %}
+      <div class="sp-list-item">
+        <div class="sp-list-name">{{ row.project__name }}</div>
+        <span class="sp-badge sp-badge-blue">{{ row.count }} check-in{{ row.count|pluralize }}</span>
+      </div>
+    {% endfor %}
+  {% else %}
+    <div class="sp-empty">No attendance recorded today yet.</div>
+  {% endif %}
+</div>
 {% endblock %}
-
