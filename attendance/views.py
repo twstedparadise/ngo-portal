@@ -86,7 +86,7 @@ def manager_dashboard(request):
 
 @login_required
 def finance_dashboard(request):
-    """Dashboard for finance officers"""
+    """Dashboard for finance officers with financial metrics"""
     if request.user.role != 'finance':
         messages.error(request, 'Access denied.')
         return redirect('home')
@@ -94,20 +94,41 @@ def finance_dashboard(request):
     today = timezone.now().date()
     month_ago = today - timezone.timedelta(days=30)
     
-    # Get recent activities for the table
-    recent_activities = ActivityLog.objects.select_related('user', 'project').order_by('-timestamp')[:15]
+    # Get recent attendance records for costing
+    recent_attendance = Attendance.objects.select_related('user', 'project').order_by('-check_in_time')[:15]
+    
+    # Calculate total hours from all attendance records
+    total_minutes = sum([a.duration_minutes or 0 for a in Attendance.objects.all()])
+    total_hours = round(total_minutes / 60, 1)
+    
+    # Placeholder financial data (MVP)
+    total_budget = "2,500,000"
+    avg_cost_per_hour = "500"
+    personnel_costs = "1,200,000"
+    operational_costs = "450,000"
+    equipment_costs = "300,000"
+    training_costs = "150,000"
+    travel_costs = "200,000"
+    total_spent = "2,300,000"
     
     context = {
-        'total_attendance_hours': 1247,  # Placeholder - calculate from actual data later
-        'active_projects': Project.objects.count(),
+        'total_budget': total_budget,
+        'total_hours': total_hours,
+        'avg_cost_per_hour': avg_cost_per_hour,
         'monthly_checkins': Attendance.objects.filter(check_in_time__date__gte=month_ago).count(),
         'unique_officers': User.objects.filter(role='field_officer').count(),
-        'recent_activities': recent_activities,
+        'personnel_costs': personnel_costs,
+        'operational_costs': operational_costs,
+        'equipment_costs': equipment_costs,
+        'training_costs': training_costs,
+        'travel_costs': travel_costs,
+        'total_spent': total_spent,
+        'recent_attendance': recent_attendance,
         'today': today,
     }
     
     return render(request, 'dashboards/finance_dashboard.html', context)
-
+    
 @login_required
 def attendance_logs(request):
     """View all attendance logs"""
@@ -137,23 +158,25 @@ def check_in(request, project_id):
     
     # Check if within geofence
     if distance <= project.radius_m:
+        # Create attendance record with correct field names
         attendance = Attendance.objects.create(
             user=request.user,
             project=project,
             check_in_time=timezone.now(),
-            check_in_latitude=user_lat,
-            check_in_longitude=user_lng,
-            is_within_geofence=True
+            check_in_lat=user_lat,
+            check_in_lng=user_lng,
+            duration_seconds=0
         )
         
+        # Log activity
         ActivityLog.objects.create(
             user=request.user,
-            action='check_in',
             project=project,
+            action=ActivityLog.Action.CHECK_IN,
+            success=True,
+            message=f"Check-in successful. Distance: {distance:.2f}m",
             latitude=user_lat,
-            longitude=user_lng,
-            within_geofence=True,
-            details=f"Check-in successful. Distance: {distance:.2f}m"
+            longitude=user_lng
         )
         
         return JsonResponse({
@@ -162,14 +185,15 @@ def check_in(request, project_id):
             'attendance_id': attendance.id
         })
     else:
+        # Log failed attempt
         ActivityLog.objects.create(
             user=request.user,
-            action='check_in_failed',
             project=project,
+            action=ActivityLog.Action.GEOFENCE_FAIL,
+            success=False,
+            message=f"Geofence violation. Distance: {distance:.2f}m (Max: {project.radius_m}m)",
             latitude=user_lat,
-            longitude=user_lng,
-            within_geofence=False,
-            details=f"Geofence violation. Distance: {distance:.2f}m (Max: {project.radius_m}m)"
+            longitude=user_lng
         )
         
         return JsonResponse({
@@ -192,26 +216,38 @@ def check_out(request, attendance_id):
     except (json.JSONDecodeError, TypeError, ValueError):
         return JsonResponse({'error': 'Invalid GPS data'}, status=400)
     
-    attendance.check_out_time = timezone.now()
-    attendance.check_out_latitude = user_lat
-    attendance.check_out_longitude = user_lng
+    # Check if already checked out
+    if attendance.check_out_time:
+        return JsonResponse({
+            'success': False,
+            'error': 'Already checked out from this session.'
+        }, status=400)
     
-    duration = attendance.check_out_time - attendance.check_in_time
-    attendance.duration_minutes = int(duration.total_seconds() / 60)
+    # Calculate duration in seconds
+    now = timezone.now()
+    duration_seconds = int((now - attendance.check_in_time).total_seconds())
+    
+    # Update attendance using the close method
+    attendance.close(
+        out_time=now,
+        out_lat=user_lat,
+        out_lng=user_lng
+    )
     attendance.save()
     
+    # Log activity
     ActivityLog.objects.create(
         user=request.user,
-        action='check_out',
         project=attendance.project,
+        action=ActivityLog.Action.CHECK_OUT,
+        success=True,
+        message=f"Checked out after {duration_seconds // 60} minutes",
         latitude=user_lat,
-        longitude=user_lng,
-        within_geofence=True,
-        details=f"Checked out after {attendance.duration_minutes} minutes"
+        longitude=user_lng
     )
     
     return JsonResponse({
         'success': True,
-        'message': f'Check-out successful! Duration: {attendance.duration_minutes} minutes.',
-        'duration': attendance.duration_minutes
+        'message': f'Check-out successful! Duration: {duration_seconds // 60} minutes.',
+        'duration': duration_seconds // 60
     })
